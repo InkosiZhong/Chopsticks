@@ -1,0 +1,12 @@
+*.so
+**/*.so
+.vscode
+__pycache__
+**/__pycache__
+cache
+**/cache
+test
+*.spec
+**/.spec
+build/*
+dist/*

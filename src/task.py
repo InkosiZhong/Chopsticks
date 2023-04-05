@@ -1,0 +1,45 @@
+'''
+Chopsticks: a sequential task manager for Linux & MacOS
+
+task: define Task class
+'''
+
+import os
+import subprocess
+import time
+from state import TaskState
+
+cnt = 0
+class Task:
+    def __init__(self, cmd: str, cwd: str, out: str) -> None:
+        global cnt
+        self.idx = cnt
+        cnt += 1
+        self.cmd = cmd
+        self.cwd = cwd
+        self.out = out
+        self.state = TaskState.waiting
+        self.submit_time = time.localtime()
+        self.start_time = None
+        self.finish_time = None
+        self._ret = None
+
+    def run(self):
+        self.start_time = time.localtime()
+        self.state = TaskState.running
+        #ret = os.system(f'{self.cmd} > {self.out} 2>&1')
+        self._ret = subprocess.Popen(f'{self.cmd} > {self.out} 2>&1', shell=True, cwd=self.cwd)
+        self._ret.wait()
+        self.finish_time = time.localtime()
+        if self._ret.returncode == 0:
+            self.state = TaskState.finished
+        else:
+            self.state = TaskState.crashed
+
+    def cancel(self):
+        self.finish_time = time.localtime()
+        self.state = TaskState.cancelled
+
+    def crash(self):
+        self.finish_time = time.localtime()
+        self.state = TaskState.crashed
