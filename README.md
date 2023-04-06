@@ -130,7 +130,7 @@ kill pid
 
 #### 2. Output of the running task can not be redirect
 
-Since I use the most intuitive method to implement the redirection part, once the task is submitted, it cannot be modified. In addition, all outputs are in the same file or terminal now. In the future Chopsticks may be support for redirecting to a different file for each task.
+Since I use the most intuitive method to implement the redirection part, once the task starts executing, it cannot be modified. In addition, all outputs are in the same file or terminal now. In the future Chopsticks may be support for redirecting to a different file for each task.
 
 #### 3. Doesn't support interactive tasks
 
