@@ -62,8 +62,8 @@ csubmit python test.py 0 1
 > If you want to cancel the running task, you have to use `kill pid`.
 
 ```bash
-ccancel id 	# cancel a specified task
-ccancel 		# cancel all tasks that are waiting
+ccancel id # cancel a specified task
+ccancel # cancel all tasks that are waiting
 # Example
 csubmit python test.py 0 1
 > [submit] id=0
@@ -76,14 +76,20 @@ ccancal 1
 #### cls
 
 ```bash
-cls n			# show the last-n tasks
-cls 			# show all tasks
+cls n # show the last-n tasks
+cls # show all tasks
 # Example
 cls
 >
   id  state      submit    start     end       command
 ----  ---------  --------  --------  --------  ------------------
    0  finished   22:35:02  22:35:02  22:35:02  python test.py 0 1
+   1  cancelled  22:35:03  22:35:03  22:35:03  python test.py 0 1
+
+cls 1 # the latest one
+>
+  id  state      submit    start     end       command
+----  ---------  --------  --------  --------  ------------------
    1  cancelled  22:35:03  22:35:03  22:35:03  python test.py 0 1
 ```
 
@@ -103,7 +109,43 @@ cls
 #### cquit
 
 ```bash
-cquit				# quit if all tasks are finished
+cquit # quit if all tasks are finished
 cquit force # cancal the waiting tasks and ignore the running task
 ```
 
+## Known Issues and Solution
+
+#### 1. Running task can not be cancelled
+
+I implement Chopsticks with the futhure package, it cannot cancel the current running thread.
+
+If you wanna cancel it anyway, just use the following method
+
+```bash
+ps -a # find the pid of your running task
+kill pid
+```
+
+> Note: tasks killed by system but not Chopsticks will be marked as `crashed`, but not `cancelled`
+
+#### 2. Output of the running task can not be redirect
+
+Since I use the most intuitive method to implement the redirection part, once the task is submitted, it cannot be modified. In addition, all outputs are in the same file or terminal now. In the future Chopsticks may be support for redirecting to a different file for each task.
+
+#### 3. Doesn't support interactive tasks
+
+Chopsticks exists to handle large-scale computing tasks, interactive tasks are not considered, please submit manually in the terminal.
+
+#### 4. Runtime environment
+
+Chopsticks temporarily does not support different tasks to run in different environments, it mainly depends on the running environment of the guard process. If you want to modify the running environment (such as conda environment), please execute following commands
+
+```bash
+(base) cquit
+(base) conda activate env
+(env) credirect # or any other commands
+> [trigger] start a guard process
+> [guard] guard process ready
+> [redirect] set as /tmp/out.txt
+> [trigger] the above outputs are antique
+```
