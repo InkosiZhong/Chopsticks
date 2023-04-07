@@ -12,6 +12,8 @@
 - If you have a large-scale computing cluster that can sufficiently parallelize the submitted tasks, please use SLURM.
 - If your computing tasks do not take up very much hardware resources, please submit them manually in the terminal directly, don't worry about them being interrupted.
 
+![Chopsticks.gif](https://s2.loli.net/2023/04/07/Y1O3G2udeV597Jg.gif)
+
 ## Get Started
 
 ### Requirements
