@@ -1,4 +1,5 @@
 pip install pyinstaller
+pip install tabulate
 pip install psutil 
 
 touch /tmp/chopsticks_pipe.in
