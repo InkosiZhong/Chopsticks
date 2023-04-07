@@ -1,6 +1,9 @@
 pip install pyinstaller
 pip install psutil 
 
+touch /tmp/chopsticks_pipe.in
+touch /tmp/chopsticks_pipe.out
+
 cquit # avoid chopsticks is running
 pyinstaller -F src/guard.py 
 pyinstaller -F src/credirect.py 

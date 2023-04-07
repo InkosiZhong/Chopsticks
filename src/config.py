@@ -1,2 +1,2 @@
-CMD_PIPE = '/tmp/pipe.in'
-RET_PIPE = '/tmp/pipe.out'
+CMD_PIPE = '/tmp/chopsticks_pipe.in'
+RET_PIPE = '/tmp/chopsticks_pipe.out'
