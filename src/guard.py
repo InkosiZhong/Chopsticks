@@ -114,10 +114,11 @@ class Guard:
             sync_cnt = ret[0]
             if ret[1] == 'ls':
                 n = None
-                full_cmd = '-l' in ret
-                ret = [x for x in ret if x != '-l']
+                param = ret[2].split(' ')
+                full_cmd = '-l' in param
+                param = [x for x in param if x != '-l']
                 try:
-                    n = int(ret[2])
+                    n = int(param[0])
                 except:
                     pass
                 self.ls(n, full_cmd, sync_cnt)
