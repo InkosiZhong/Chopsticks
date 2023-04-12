@@ -80,19 +80,26 @@ ccancal 1
 ```bash
 cls n # show the last-n tasks
 cls # show all tasks
+cls -l # show long informations
 # Example
 cls
 >
-  id  state      submit    start     end       command
-----  ---------  --------  --------  --------  ------------------
-   0  finished   22:35:02  22:35:02  22:35:02  python test.py 0 1
-   1  cancelled  22:35:03  22:35:03  22:35:03  python test.py 0 1
+  id  state      submit    command
+----  ---------  --------  ------------------
+   0  finished   22:35:02  python test.py 0 1
+   1  cancelled  22:35:03  python test.py 0 1
 
 cls 1 # the latest one
 >
-  id  state      submit    start     end       command
-----  ---------  --------  --------  --------  ------------------
-   1  cancelled  22:35:03  22:35:03  22:35:03  python test.py 0 1
+  id  state      submit    command
+----  ---------  --------  ------------------
+   1  cancelled  22:35:03  python test.py 0 1
+   
+cls 1 -l
+>
+  id  state      submit    start     end       duration        command
+----  ---------  --------  --------  --------  --------------- ------------------
+   1  cancelled  22:35:03  22:35:03  22:35:03  0 days 00:00:00 python test.py 0 1
 ```
 
 #### cclean
@@ -104,8 +111,8 @@ cclean
 > [clean] 2 tasks
 cls
 >
-  id  state      submit    start     end       command
-----  ---------  --------  --------  --------  ------------------
+  id  state      submit    start     end       duration    command
+----  ---------  --------  --------  --------  ----------- ------------------
 ```
 
 #### cquit
@@ -141,13 +148,3 @@ Chopsticks exists to handle large-scale computing tasks, interactive tasks are n
 #### 4. Runtime environment
 
 Chopsticks temporarily does not support different tasks to run in different environments, it mainly depends on the running environment of the guard process. If you want to modify the running environment (such as conda environment), please execute following commands
-
-```bash
-(base) cquit
-(base) conda activate env
-(env) credirect # or any other commands
-> [trigger] start a guard process
-> [guard] guard process ready
-> [redirect] set as /tmp/out.txt
-> [trigger] the above outputs are antique
-```
