@@ -111,8 +111,8 @@ cclean
 > [clean] 2 tasks
 cls
 >
-  id  state      submit    start     end       duration    command
-----  ---------  --------  --------  --------  ----------- ------------------
+  id  state      submit    command
+----  ---------  --------  ------------------
 ```
 
 #### cquit
@@ -148,3 +148,13 @@ Chopsticks exists to handle large-scale computing tasks, interactive tasks are n
 #### 4. Runtime environment
 
 Chopsticks temporarily does not support different tasks to run in different environments, it mainly depends on the running environment of the guard process. If you want to modify the running environment (such as conda environment), please execute following commands
+
+```bash
+(base) cquit
+(base) conda activate env
+(env) credirect # or any other commands
+> [trigger] start a guard process
+> [guard] guard process ready
+> [redirect] set as /tmp/out.txt
+> [trigger] the above outputs are antique
+```
