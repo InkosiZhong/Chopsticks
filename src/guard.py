@@ -7,6 +7,7 @@ guard: this guard class will stay online
 import os
 import time
 from core import TaskManager
+from utils import format_duration
 from tabulate import tabulate
 from config import CMD_PIPE, RET_PIPE
 
@@ -61,19 +62,32 @@ class Guard:
         else:
             return time.strftime(self.format, t)
 
-    def ls(self, n: int, sync_cnt: int):
+    def ls(self, n: int, full_cmd: bool, sync_cnt: int):
         tasks = self.manager.get_tasks(n)
-        header = ['id', 'state', 'submit', 'start', 'end', 'command']
+        if full_cmd:
+            header = ['id', 'state', 'submit', 'start', 'end', 'duration', 'command']
+        else:
+            header = ['id', 'state', 'submit', 'command']
         data = [header]
         for task in tasks:
-            data.append([
-                task.idx,
-                task.state.name,
-                self.format_time(task.submit_time),
-                self.format_time(task.start_time),
-                self.format_time(task.finish_time),
-                f'{task.cmd[:97]}...' if len(task.cmd) > 100 else task.cmd
-            ])
+            if full_cmd:
+                record = [
+                    task.idx,
+                    task.state.name,
+                    self.format_time(task.submit_time),
+                    self.format_time(task.start_time),
+                    self.format_time(task.finish_time),
+                    format_duration(task.duration),
+                    task.cmd
+                ]
+            else:
+                record = [
+                    task.idx,
+                    task.state.name,
+                    self.format_time(task.submit_time),
+                    f'{task.cmd[:47]}...'
+                ]
+            data.append(record)
         self.call_back(tabulate(data, headers='firstrow'), sync_cnt)
 
     def clean(self, sync_cnt: int):
@@ -100,11 +114,13 @@ class Guard:
             sync_cnt = ret[0]
             if ret[1] == 'ls':
                 n = None
+                full_cmd = '-l' in ret
+                ret = [x for x in ret if x != '-l']
                 try:
                     n = int(ret[2])
                 except:
                     pass
-                self.ls(n, sync_cnt)
+                self.ls(n, full_cmd, sync_cnt)
             elif ret[1] == 'submit':
                 try:
                     cwd, cmd = ret[2].split(' ', 1)

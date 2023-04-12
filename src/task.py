@@ -22,6 +22,7 @@ class Task:
         self.submit_time = time.localtime()
         self.start_time = None
         self.finish_time = None
+        self.duration = None
         self._ret = None
 
     def run(self):
@@ -30,16 +31,22 @@ class Task:
         #ret = os.system(f'{self.cmd} > {self.out} 2>&1')
         self._ret = subprocess.Popen(f'{self.cmd} > {self.out} 2>&1', shell=True, cwd=self.cwd)
         self._ret.wait()
-        self.finish_time = time.localtime()
+        self.finish()
         if self._ret.returncode == 0:
             self.state = TaskState.finished
         else:
             self.state = TaskState.crashed
 
     def cancel(self):
-        self.finish_time = time.localtime()
+        self.finish()
         self.state = TaskState.cancelled
 
     def crash(self):
-        self.finish_time = time.localtime()
+        self.finish()
         self.state = TaskState.crashed
+
+    def finish(self):
+        self.finish_time = time.localtime()
+        if self.start_time is not None:
+            self.duration = time.mktime(self.finish_time) - \
+                time.mktime(self.start_time)
