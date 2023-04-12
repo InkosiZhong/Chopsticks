@@ -28,6 +28,9 @@ def guard_ready() -> bool:
 sync_cnt = 0 # sync counter
 def trigger(op: str, cmd: str):
     if not guard_ready():
+        if op == 'quit':
+            print('[cquit] guard prcoess is not running, no need to quit')
+            return
         print('[trigger] start a guard process')
         subprocess.Popen('chopsticks')
         time.sleep(1)
