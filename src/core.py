@@ -43,20 +43,27 @@ class TaskManager:
         self.task_queue.append((task, ret))
         return task.idx
 
-    def get_tasks(self, n: int=None) -> List[Task]:
+    def get_tasks(self, n: int=None, done: bool=True, not_done: bool=True) -> List[Task]:
         """get submitted tasks and their states
 
         Args:
             n (int): return the nearest n-th tasks, None for all
+            done (bool): return the tasks in [finished|crashed|cancelled] states
+            not_done (bool): return the tasks in [running|waiting] states
 
         Returns:
             List[Task]: all tasks in the history and
         """
+        def is_valid(task):
+            nonlocal done, not_done
+            if done and not_done: # valid anyway
+                return True
+            task_done = task.done()
+            return (done and task_done) or (not_done and not task_done)
+        tasks = [copy(task) for task, _ in self.task_queue if is_valid(task)]
         if n is not None:
-            n = min(len(self.task_queue), n)
-        else:
-            n = len(self.task_queue)
-        tasks = [copy(task) for task, _ in self.task_queue[-n:]]
+            n = min(len(tasks), n)
+            tasks = tasks[-n:]
         return tasks
 
     def cancel(self, idx: int=None) -> bool:

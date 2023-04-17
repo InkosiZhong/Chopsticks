@@ -50,3 +50,6 @@ class Task:
         if self.start_time is not None:
             self.duration = time.mktime(self.finish_time) - \
                 time.mktime(self.start_time)
+
+    def done(self) -> bool:
+        return self.state in [TaskState.finished, TaskState.crashed, TaskState.cancelled]

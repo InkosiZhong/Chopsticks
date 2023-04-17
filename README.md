@@ -77,10 +77,17 @@ ccancal 1
 
 #### cls
 
+> Note: `argparser` enabled
+
 ```bash
-cls n # show the last-n tasks
-cls # show all tasks
-cls -l # show long informations
+usage: cls [-h] [-l] [-n LATEST_N] [--done] [--not-done]
+optional arguments:
+  -h, --help            show this help message and exit
+  -l, --long            show long info
+  -n LATEST_N, --latest-n LATEST_N
+                        show the latest n records
+  --done                show the records that are already finished|crashed|cancelled
+  --not-done            show the records that are still running|waiting
 # Example
 cls
 >
@@ -89,13 +96,13 @@ cls
    0  finished   22:35:02  python test.py 0 1
    1  cancelled  22:35:03  python test.py 0 1
 
-cls 1 # the latest one
+cls -n 1 # the latest one
 >
   id  state      submit    command
 ----  ---------  --------  ------------------
    1  cancelled  22:35:03  python test.py 0 1
    
-cls 1 -l
+cls -n 1 -l --done # the latest one that is done
 >
   id  state      submit    start     end       duration        command
 ----  ---------  --------  --------  --------  --------------- ------------------
@@ -117,9 +124,13 @@ cls
 
 #### cquit
 
+> Note: `argparser` enabled
+
 ```bash
-cquit # quit if all tasks are finished
-cquit force # cancal the waiting tasks and ignore the running task
+usage: cquit [-h] [-f]
+optional arguments:
+  -h, --help   show this help message and exit
+  -f, --force  quit anyway, ignoring the running|waiting tasks
 ```
 
 ## Known Issues and Solution

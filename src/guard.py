@@ -6,10 +6,12 @@ guard: this guard class will stay online
 
 import os
 import time
+from typing import Sequence
 from core import TaskManager
 from utils import format_duration
 from tabulate import tabulate
 from config import CMD_PIPE, RET_PIPE
+from args import ls_parser, quit_parser
 
 class Guard:
     def __init__(self) -> None:
@@ -62,15 +64,19 @@ class Guard:
         else:
             return time.strftime(self.format, t)
 
-    def ls(self, n: int, full_cmd: bool, sync_cnt: int):
-        tasks = self.manager.get_tasks(n)
-        if full_cmd:
+    def ls(self, param: Sequence[str], sync_cnt: int):
+        args = ls_parser.parse_args(param)
+        if args.done or args.not_done:
+            tasks = self.manager.get_tasks(args.latest_n, args.done, args.not_done)
+        else: # no signal
+            tasks = self.manager.get_tasks(args.latest_n)
+        if args.long:
             header = ['id', 'state', 'submit', 'start', 'end', 'duration', 'command']
         else:
             header = ['id', 'state', 'submit', 'command']
         data = [header]
         for task in tasks:
-            if full_cmd:
+            if args.long:
                 record = [
                     task.idx,
                     task.state.name,
@@ -94,8 +100,9 @@ class Guard:
         n = self.manager.clean()
         self.call_back(f'[clean] {n} tasks', sync_cnt)
 
-    def quit(self, force: bool, sync_cnt: int) -> bool:
-        if force:
+    def quit(self, param: Sequence[str], sync_cnt: int) -> bool:
+        args = quit_parser.parse_args(param)
+        if args.force:
             self.cancel(None, -1)
         elif not self.manager.all_done():
             self.call_back('[quit] tasks are still running, use \'quit force\' to quit anyway', sync_cnt)
@@ -112,41 +119,34 @@ class Guard:
             ret = s.decode()
             ret = ret.split(' ', 2)
             sync_cnt = ret[0]
-            if ret[1] == 'ls':
-                n = None
-                param = ret[2].split(' ')
-                full_cmd = '-l' in param
-                param = [x for x in param if x != '-l']
-                try:
-                    n = int(param[0])
-                except:
-                    pass
-                self.ls(n, full_cmd, sync_cnt)
-            elif ret[1] == 'submit':
+            op = ret[1]
+            if len(ret) == 3:
+                param = [x for x in ret[2].split(' ') if x] # not ''
+            else:
+                param = []
+            if op == 'ls':
+                self.ls(param, sync_cnt)
+            elif op == 'submit':
                 try:
                     cwd, cmd = ret[2].split(' ', 1)
                     self.submit(cmd, cwd, sync_cnt)
                 except:
                     self.call_back('[error] usage: submit command arg1 arg2 ...', sync_cnt)
-            elif ret[1] == 'cancel':
+            elif op == 'cancel':
                 try:
                     idx = int(ret[2])
                 except:
                     idx = None
                 self.cancel(idx, sync_cnt)
-            elif ret[1] == 'clean':
+            elif op == 'clean':
                 self.clean(sync_cnt)
-            elif ret[1] == 'redirect':
+            elif op == 'redirect':
                 try:
                     self.redirect(ret[2], sync_cnt)
                 except:
                     self.call_back('[error] usage: redirect path|terminal', sync_cnt)
-            elif ret[1] == 'quit':
-                try:
-                    force = ret[2] == 'force'
-                except:
-                    force = False
-                if self.quit(force, sync_cnt):
+            elif op == 'quit':
+                if self.quit(param, sync_cnt):
                     break
         os.close(self.rf)
         os.close(self.wf)
