@@ -22,7 +22,7 @@ class Task:
         self.submit_time = time.localtime()
         self.start_time = None
         self.finish_time = None
-        self.duration = None
+        self._duration = None
         self._ret = None
 
     def run(self):
@@ -47,9 +47,14 @@ class Task:
 
     def finish(self):
         self.finish_time = time.localtime()
-        if self.start_time is not None:
-            self.duration = time.mktime(self.finish_time) - \
+        if self.start_time:
+            self._duration = time.mktime(self.finish_time) - \
                 time.mktime(self.start_time)
+            
+    def duration(self):
+        if self.state == TaskState.running:
+            return time.time() - time.mktime(self.start_time)
+        return self._duration
 
     def done(self) -> bool:
         return self.state in [TaskState.finished, TaskState.crashed, TaskState.cancelled]

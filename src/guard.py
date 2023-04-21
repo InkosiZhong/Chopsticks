@@ -83,7 +83,7 @@ class Guard:
                     self.format_time(task.submit_time),
                     self.format_time(task.start_time),
                     self.format_time(task.finish_time),
-                    format_duration(task.duration),
+                    format_duration(task.duration()),
                     task.cmd
                 ]
             else:
