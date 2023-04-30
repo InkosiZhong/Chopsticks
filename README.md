@@ -59,10 +59,6 @@ csubmit python test.py 0 1
 
 #### ccancel
 
-> Note: Chopsticks is only a very basic implementation. Since the bottom layer is implemented by the futhure package, **it does not support the cancellation of the running task.**
->
-> If you want to cancel the running task, you have to use `kill pid`.
-
 ```bash
 ccancel id # cancel a specified task
 ccancel # cancel all tasks that are waiting
@@ -80,10 +76,11 @@ ccancal 1
 > Note: `argparser` enabled
 
 ```bash
-usage: cls [-h] [-l] [-n LATEST_N] [--done] [--not-done]
+usage: cls [-h] [-l] [-p] [-n LATEST_N] [--done] [--not-done]
 optional arguments:
   -h, --help            show this help message and exit
   -l, --long            show long info
+  -p, --pid             show PID
   -n LATEST_N, --latest-n LATEST_N
                         show the latest n records
   --done                show the records that are already finished|crashed|cancelled
@@ -135,28 +132,15 @@ optional arguments:
 
 ## Known Issues and Solution
 
-#### 1. Running task can not be cancelled
-
-I implement Chopsticks with the futhure package, it cannot cancel the current running thread.
-
-If you wanna cancel it anyway, just use the following method
-
-```bash
-ps -a # find the pid of your running task
-kill pid
-```
-
-> Note: tasks killed by system but not Chopsticks will be marked as `crashed`, but not `cancelled`
-
-#### 2. Output of the running task can not be redirect
+#### 1. Output of the running task can not be redirect
 
 Since I use the most intuitive method to implement the redirection part, once the task starts executing, it cannot be modified. In addition, all outputs are in the same file or terminal now. In the future Chopsticks may be support for redirecting to a different file for each task.
 
-#### 3. Doesn't support interactive tasks
+#### 2. Doesn't support interactive tasks
 
 Chopsticks exists to handle large-scale computing tasks, interactive tasks are not considered, please submit manually in the terminal.
 
-#### 4. Runtime environment
+#### 3. Runtime environment
 
 Chopsticks temporarily does not support different tasks to run in different environments, it mainly depends on the running environment of the guard process. If you want to modify the running environment (such as conda environment), please execute following commands
 

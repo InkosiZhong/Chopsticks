@@ -74,6 +74,8 @@ class Guard:
             header = ['id', 'state', 'submit', 'start', 'end', 'duration', 'command']
         else:
             header = ['id', 'state', 'submit', 'command']
+        if args.pid:
+            header += ['pid']
         data = [header]
         for task in tasks:
             if args.long:
@@ -93,6 +95,8 @@ class Guard:
                     self.format_time(task.submit_time),
                     f'{task.cmd[:47]}...'
                 ]
+            if args.pid:
+                record += [task.pid if task.pid else 'N/A']
             data.append(record)
         self.call_back(tabulate(data, headers='firstrow'), sync_cnt)
 

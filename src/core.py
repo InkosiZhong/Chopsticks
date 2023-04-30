@@ -78,13 +78,16 @@ class TaskManager:
         """
         if idx is None:
             cancel_any = False
-            for i in range(-len(self.task_queue)+1, 0): # from the tail
+            for i in range(-len(self.task_queue)+1, 1): # from the tail
                 task, future = self.task_queue[-i]
                 if task.state == TaskState.waiting:
                     cancelled = future.cancel() # TODO: cannot cancel the current running task
                     if cancelled:
-                        cancel_any = True
                         task.cancel()
+                        cancel_any = True
+                elif task.state == TaskState.running:
+                    task.cancel()
+                    cancel_any = True
             return cancel_any
         else:
             i = binary_search(self.task_queue, idx, hit_task)
@@ -92,10 +95,10 @@ class TaskManager:
                 return False
             task, future = self.task_queue[i]
             cancelled = future.cancel()
-            if not cancelled:
-                return False
-            task.cancel()
-            return True
+            if cancelled or task.state == TaskState.running:
+                task.cancel()
+                return True
+            return False
 
     def clean(self) -> int:
         """clean all history tasks

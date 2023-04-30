@@ -5,6 +5,8 @@ task: define Task class
 '''
 
 import os
+import signal
+import psutil
 import subprocess
 import time
 from state import TaskState
@@ -23,21 +25,26 @@ class Task:
         self.start_time = None
         self.finish_time = None
         self._duration = None
-        self._ret = None
+        self.pid = None
 
     def run(self):
         self.start_time = time.localtime()
         self.state = TaskState.running
         #ret = os.system(f'{self.cmd} > {self.out} 2>&1')
-        self._ret = subprocess.Popen(f'{self.cmd} > {self.out} 2>&1', shell=True, cwd=self.cwd)
-        self._ret.wait()
+        process = subprocess.Popen(f'{self.cmd} > {self.out} 2>&1', shell=True, cwd=self.cwd)
+        self.pid = process.pid
+        process.wait()
         self.finish()
-        if self._ret.returncode == 0:
+        if process.returncode == 0:
             self.state = TaskState.finished
         else:
             self.state = TaskState.crashed
 
     def cancel(self):
+        if self.state == TaskState.running:
+            os.kill(self.pid, signal.SIGINT)
+            for p in psutil.Process(self.pid).children(recursive=True):
+                os.kill(p.pid, signal.SIGINT)
         self.finish()
         self.state = TaskState.cancelled
 
