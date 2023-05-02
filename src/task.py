@@ -35,10 +35,11 @@ class Task:
         self.pid = process.pid
         process.wait()
         self.finish()
-        if process.returncode == 0:
-            self.state = TaskState.finished
-        else:
-            self.state = TaskState.crashed
+        if self.state == TaskState.running:
+            if process.returncode == 0:
+                self.state = TaskState.finished
+            else:
+                self.state = TaskState.crashed
 
     def cancel(self):
         if self.state == TaskState.running:
