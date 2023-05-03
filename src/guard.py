@@ -10,7 +10,7 @@ from typing import Sequence
 from core import TaskManager
 from utils import format_duration
 from tabulate import tabulate
-from config import CMD_PIPE, RET_PIPE
+from config import CMD_PIPE, RET_PIPE, SYNC_SIGN
 from args import ls_parser, quit_parser
 
 class Guard:
@@ -36,7 +36,7 @@ class Guard:
     def call_back(self, ctx: str, sync_cnt: int):
         if sync_cnt >= 0:
             os.write(self.wf, ctx.encode())
-            os.write(self.wf, f'sync_cnt={sync_cnt}'.encode())
+            os.write(self.wf, f'{SYNC_SIGN}{sync_cnt}'.encode())
 
     def redirect(self, out: str, sync_cnt: int):
         if self.manager is None:

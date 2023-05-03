@@ -12,7 +12,7 @@ import os
 import psutil
 import subprocess
 import time
-from config import CMD_PIPE, RET_PIPE
+from config import CMD_PIPE, RET_PIPE, SYNC_SIGN
 
 def guard_ready() -> bool:
     pids = psutil.pids()
@@ -43,7 +43,7 @@ def trigger(op: str, cmd: str):
         if len(s) == 0:
             break
         get_ret = False
-        for ret in s.decode().split('sync_cnt='):
+        for ret in s.decode().split(SYNC_SIGN):
             try:
                 # is sync_cnt
                 ret_cnt = int(ret.strip())
