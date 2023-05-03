@@ -56,7 +56,10 @@ class Guard:
             else:
                 self.call_back(f'[cancel] id={idx}', sync_cnt)
         else:
-            self.call_back(f'[error] failed to cancel the task ({idx})', sync_cnt)
+            if idx is None:
+                self.call_back(f'[error] failed to cancel the tasks', sync_cnt)
+            else:
+                self.call_back(f'[error] failed to cancel the task ({idx})', sync_cnt)
         
     def format_time(self, t):
         if t is None:

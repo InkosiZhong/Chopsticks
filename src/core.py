@@ -77,25 +77,36 @@ class TaskManager:
             bool: if successfully cancelled
         """
         if idx is None:
+            need_cancel = False
             cancel_any = False
             for i in range(-len(self.task_queue)+1, 1): # from the tail
                 task, future = self.task_queue[-i]
                 if task.state == TaskState.waiting:
+                    need_cancel = True
                     cancelled = future.cancel() # TODO: cannot cancel the current running task
                     if cancelled:
                         task.cancel()
                         cancel_any = True
                 elif task.state == TaskState.running:
+                    need_cancel = True
                     task.cancel()
                     cancel_any = True
+            if not need_cancel:
+                return True
             return cancel_any
         else:
             i = binary_search(self.task_queue, idx, hit_task)
             if i is None:
                 return False
             task, future = self.task_queue[i]
-            cancelled = future.cancel()
-            if cancelled or task.state == TaskState.running:
+            if task.state not in [TaskState.waiting, TaskState.running]:
+                return True
+            if task.state == TaskState.waiting:
+                cancelled = future.cancel()
+                if cancelled:
+                    task.cancel()
+                    return True
+            elif task.state == TaskState.running:
                 task.cancel()
                 return True
             return False
