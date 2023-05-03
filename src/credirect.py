@@ -8,5 +8,4 @@ if __name__ == '__main__':
         trigger('redirect', out)
     else: # redirect here
         result = subprocess.run(['tty'], capture_output=True, text=True)
-        print(result.stdout.strip())
         trigger('redirect', result.stdout.strip())

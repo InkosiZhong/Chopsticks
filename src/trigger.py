@@ -46,7 +46,7 @@ def trigger(op: str, cmd: str):
         for ret in s.decode().split('sync_cnt='):
             try:
                 # is sync_cnt
-                ret_cnt = int(ret)
+                ret_cnt = int(ret.strip())
                 if ret_cnt is not None:
                     if ret_cnt < sync_cnt:
                         print('[trigger] the above outputs are antique')

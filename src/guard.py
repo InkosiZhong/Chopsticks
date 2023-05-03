@@ -34,8 +34,9 @@ class Guard:
         print('[guard] guard process ready')
 
     def call_back(self, ctx: str, sync_cnt: int):
-        os.write(self.wf, ctx.encode())
-        os.write(self.wf, f'sync_cnt={sync_cnt}'.encode())
+        if sync_cnt >= 0:
+            os.write(self.wf, ctx.encode())
+            os.write(self.wf, f'sync_cnt={sync_cnt}'.encode())
 
     def redirect(self, out: str, sync_cnt: int):
         if self.manager is None:
@@ -125,7 +126,7 @@ class Guard:
                 continue
             ret = s.decode()
             ret = ret.split(' ', 2)
-            sync_cnt = ret[0]
+            sync_cnt = int(ret[0])
             op = ret[1]
             if len(ret) == 3:
                 param = [x for x in ret[2].split(' ') if x] # not ''
