@@ -10,3 +10,4 @@ test
 **/.spec
 build/*
 dist/*
+setup_log.txt
