@@ -6,8 +6,11 @@ pip install psutil >> setup_log.txt 2>&1
 touch /tmp/chopsticks_pipe.in
 touch /tmp/chopsticks_pipe.out
 
-echo Terminate the running program
-cquit -f # avoid chopsticks is running
+if [ -f /usr/local/bin/cquit ]; then
+    echo Chopsticks is already installed
+    echo Try to terminate the running program
+    cquit -f # avoid chopsticks is running
+fi
 echo Building chopsticks
 pyinstaller -F src/guard.py >> setup_log.txt 2>&1
 echo Setup service: credirect
