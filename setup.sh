@@ -19,6 +19,8 @@ echo Setup service: csubmit
 pyinstaller -F src/csubmit.py >> setup_log.txt 2>&1
 echo Setup service: ccancel
 pyinstaller -F src/ccancel.py >> setup_log.txt 2>&1
+echo Setup service: crestart
+pyinstaller -F src/crestart.py >> setup_log.txt 2>&1
 echo Setup service: cls
 pyinstaller -F src/cls.py >> setup_log.txt 2>&1
 echo Setup service: cclean

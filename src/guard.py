@@ -61,6 +61,13 @@ class Guard:
                 self.call_back(f'[error] failed to cancel the tasks', sync_cnt)
             else:
                 self.call_back(f'[error] failed to cancel the task ({idx})', sync_cnt)
+
+    def restart(self, idx: int, sync_cnt: int):
+        restart_idx = self.manager.restart(idx)
+        if restart_idx != -1:
+            self.call_back(f'[restart] id={idx}->{restart_idx}', sync_cnt)
+        else:
+            self.call_back(f'[error] failed to restart the task ({idx})', sync_cnt)
         
     def format_time(self, t):
         if t is None:
@@ -146,6 +153,12 @@ class Guard:
                 except:
                     idx = None
                 self.cancel(idx, sync_cnt)
+            elif op == 'restart':
+                try:
+                    idx = int(ret[2])
+                    self.restart(idx, sync_cnt)
+                except:
+                    self.call_back('[error] usage: restart id', sync_cnt)
             elif op == 'clean':
                 self.clean(sync_cnt)
             elif op == 'redirect':

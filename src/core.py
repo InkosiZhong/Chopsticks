@@ -110,6 +110,23 @@ class TaskManager:
                 task.cancel()
                 return True
             return False
+        
+    def restart(self, idx: int) -> int:
+        """restart the specified task
+
+        Args:
+            idx (int): restart cancelled/crashed tasks with the given id.
+
+        Returns:
+            int: id of the restarted task
+        """
+        i = binary_search(self.task_queue, idx, hit_task)
+        if i is None:
+            return False
+        task, _ = self.task_queue[i]
+        if task.state not in [TaskState.cancelled, TaskState.crashed]:
+            return -1
+        return self.submit(task.cmd, task.cwd)
 
     def clean(self) -> int:
         """clean all history tasks
