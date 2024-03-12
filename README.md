@@ -34,7 +34,7 @@ sh setup.sh
 
 ### Usage
 
-Chopsticks supports 6 commands: redirect, submit, cancel, restart, ls, clean, quit, you can use them starting with  `c` , the first letter of the Chopsticks
+Chopsticks supports 7 commands: redirect, submit, cancel, restart, ls, clean, quit, you can use them starting with  `c` , the first letter of the Chopsticks
 
 #### creidirect
 
