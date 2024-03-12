@@ -1,3 +1,4 @@
-CMD_PIPE = '/tmp/chopsticks_pipe.in'
-RET_PIPE = '/tmp/chopsticks_pipe.out'
-SYNC_SIGN = '^sync^'
+CMD_FOLDER = '/tmp/chopsticks/cmd'
+RET_FOLDER = '/tmp/chopsticks/ret'
+METADATA = '/tmp/chopsticks/metadata.json'
+RETRY_TIMES = 10

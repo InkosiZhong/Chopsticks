@@ -122,7 +122,7 @@ class TaskManager:
         """
         i = binary_search(self.task_queue, idx, hit_task)
         if i is None:
-            return False
+            return -1
         task, _ = self.task_queue[i]
         if task.state not in [TaskState.cancelled, TaskState.crashed]:
             return -1

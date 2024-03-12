@@ -1,5 +1,6 @@
-# Chopsticks🥢
+# Chopsticks v2 🥢
 
+🎉 2.x version released, code refactored and new features added!
 > A **sequential** task manager for Linux and MacOS
 
 ### Who need this
@@ -32,66 +33,93 @@ sh setup.sh
 >
 > **Or** you can manually setup  `dist` into the path
 
+### Uninstall
+``` bash
+sh uninstall.sh # check for 1.x and 2.x versions
+```
+> `uninstall.sh` needs root permissions to uninstall from /usr/local/bin
+
 ### Usage
 
-Chopsticks supports 7 commands: redirect, submit, cancel, restart, ls, clean, quit, you can use them starting with  `c` , the first letter of the Chopsticks
+Chopsticks supports 7 commands: redirect, submit, cancel, restart, ls, clean, quit, you can use them with  `cs`
 
-#### creidirect
+#### cs reidirect
 
 ```bash
-credirect out # redirect the output into a file
-credirect /dev/pts/5 # redirect to a terminal
-credirect # or redirect to current terminal
+usage: cs redirect [--dst DST]
+
+redirect: redirect the output
+
+optional arguments:
+  --dst DST   redirect destination
+# Examples
+cs redirect # redirect to current terminal
+cs redirect --dst out # redirect the output into a file
+cs redirect --dst /dev/pts/5 # redirect to a terminal
 ```
 
-#### csubmit
+#### cs submit
 
 ```bash
-csubmit command arg1 arg2 ...
-# Example
+usage: cs submit cmd [cmd ...]
+
+submit: submit a new task
+
+positional arguments:
+  cmd         command you want to submit
+# Examples
 # if you have a add.py that input 2 args, such as
 python test.py 0 1
 # now you can submit them only by adding csubmit
-csubmit python test.py 0 1
+cs submit python test.py 0 1
 # Chopsticks will give you an unique id for this task
 > [submit] id=0
 ```
 
-#### ccancel
+#### cs cancel
 
 ```bash
-ccancel id # cancel a specified task
-ccancel # cancel all tasks that are waiting
-# Example
-csubmit python test.py 0 1
+usage: cs cancel [--id ID]
+
+cancel: cancel a task by ID
+
+optional arguments:
+  --id ID     task ID you want to cancel
+# Examples
+cs submit python test.py 0 1
 > [submit] id=0
-csubmit python test.py 0 1
+cs submit python test.py 0 1
 > [submit] id=1
-ccancal 1
+cs cancal --id 1
 > [cancel] id=1
 ```
 
-#### crestart
+#### cs restart
 
 ```bash
-crestart id # restart a specified task
+usage: cs restart --id ID
+
+restart: restart a task by ID
+
+optional arguments:
+  --id ID     task ID you want to restart
 # Example
-csubmit python test.py 0 1
+cs submit python test.py 0 1
 > [submit] id=0
-ccancel 0
+cs cancel 0
 > [cancel] id=0
-crestart 0
+cs restart 0
 > [restart] id=0->1
 ```
 
-#### cls
-
-> Note: `argparser` enabled
+#### cs ls
 
 ```bash
-usage: cls [-h] [-l] [-p] [-n LATEST_N] [--done] [--not-done]
+usage: cs ls [-l] [-p] [-n LATEST_N] [--done] [--not-done]
+
+ls: list all tasks
+
 optional arguments:
-  -h, --help            show this help message and exit
   -l, --long            show long info
   -p, --pid             show PID
   -n LATEST_N, --latest-n LATEST_N
@@ -99,47 +127,45 @@ optional arguments:
   --done                show the records that are already finished|crashed|cancelled
   --not-done            show the records that are still running|waiting
 # Example
-cls
+cs ls
 >
   id  state      submit    command
 ----  ---------  --------  ------------------
    0  finished   22:35:02  python test.py 0 1
    1  cancelled  22:35:03  python test.py 0 1
 
-cls -n 1 # the latest one
+cs ls -n 1 # the latest one
 >
   id  state      submit    command
 ----  ---------  --------  ------------------
    1  cancelled  22:35:03  python test.py 0 1
    
-cls -n 1 -l --done # the latest one that is done
+cs ls -n 1 -l --done # the latest one that is done
 >
   id  state      submit    start     end       duration        command
 ----  ---------  --------  --------  --------  --------------- ------------------
    1  cancelled  22:35:03  22:35:03  22:35:03  0 days 00:00:00 python test.py 0 1
 ```
 
-#### cclean
+#### cs clean
 
 ```bash
-cclean
 # Example
-cclean
+cs clean
 > [clean] 2 tasks
-cls
+cs ls
 >
   id  state      submit    command
 ----  ---------  --------  ------------------
 ```
 
-#### cquit
-
-> Note: `argparser` enabled
-
+#### cs quit
 ```bash
-usage: cquit [-h] [-f]
+usage: cs quit [-f]
+
+cquit: quit the guard process
+
 optional arguments:
-  -h, --help   show this help message and exit
   -f, --force  quit anyway, ignoring the running|waiting tasks
 ```
 

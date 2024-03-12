@@ -4,53 +4,66 @@ Chopsticks: a sequential task manager for Linux & MacOS
 guard: this guard class will stay online
 '''
 
-import os
+import os, shutil
 import time
-from typing import Sequence
+import json
+import subprocess
 from core import TaskManager
 from utils import format_duration
 from tabulate import tabulate
-from config import CMD_PIPE, RET_PIPE, SYNC_SIGN
-from args import ls_parser, quit_parser
+from config import CMD_FOLDER, RET_FOLDER, METADATA
 
 class Guard:
     def __init__(self) -> None:
         self.out = '/tmp/out.txt'
         self.manager = None
         self.format = '%m-%d %H:%M:%S'
+        self.handlers = {
+            'ls': self.ls,
+            'submit': self.submit,
+            'cancel': self.cancel,
+            'restart': self.restart,
+            'clean': self.clean,
+            'redirect': self.redirect,
+            'quit': self.quit
+        }
 
-        if os.path.exists(CMD_PIPE):
-            os.remove(CMD_PIPE)
-        if os.path.exists(RET_PIPE):
-            os.remove(RET_PIPE)
-        os.mkfifo(CMD_PIPE)
-        os.mkfifo(RET_PIPE)
-        self.wf = os.open(RET_PIPE, os.O_SYNC | os.O_CREAT | os.O_RDWR)
-        tmp = os.open(CMD_PIPE, os.O_SYNC | os.O_CREAT | os.O_RDWR)
-        self.rf = os.open(CMD_PIPE, os.O_RDONLY)
-        os.close(tmp)
+        if os.path.exists(CMD_FOLDER):
+            shutil.rmtree(CMD_FOLDER)
+        if os.path.exists(RET_FOLDER):
+            shutil.rmtree(RET_FOLDER)
+        os.makedirs(CMD_FOLDER)
+        os.makedirs(RET_FOLDER)
+        if os.path.exists(METADATA):
+            os.remove(METADATA)
+        with open(METADATA, 'w') as f:
+            json.dump({'sync_cnt': 0}, f)
 
-        self.redirect(self.out, -1)
+        tty = subprocess.run(['tty'], capture_output=True, text=True).stdout.strip()
+        self.redirect({'dst': tty}, -1)
         print('[guard] guard process ready')
 
     def call_back(self, ctx: str, sync_cnt: int):
         if sync_cnt >= 0:
-            os.write(self.wf, ctx.encode())
-            os.write(self.wf, f'{SYNC_SIGN}{sync_cnt}'.encode())
+            with open(os.path.join(RET_FOLDER, f'{sync_cnt}.ret'), 'w') as f:
+                f.write(ctx)
 
-    def redirect(self, out: str, sync_cnt: int):
+    def redirect(self, args: dict, sync_cnt: int):
+        if args['dst'] is None:
+            args['dst'] = args['tty']
         if self.manager is None:
-            self.call_back(f'[redirect] set as {out}', sync_cnt)
+            self.call_back(f'[redirect] set as {args["dst"]}', sync_cnt)
         else:
-            self.call_back(f'[redirect] {self.out} -> {out}', sync_cnt)
-        self.out = out
+            self.call_back(f'[redirect] {self.out} -> {args["dst"]}', sync_cnt)
+        self.out = args['dst']
         self.manager = TaskManager(self.out)
     
-    def submit(self, cmd: str, cwd: str, sync_cnt: int):
-        idx = self.manager.submit(cmd, cwd)
+    def submit(self, args: dict, sync_cnt: int):
+        idx = self.manager.submit(args['cmd'], args['cwd'])
         self.call_back(f'[submit] id={idx}', sync_cnt)
 
-    def cancel(self, idx: int, sync_cnt: int):
+    def cancel(self, args: dict, sync_cnt: int):
+        idx = args['id']
         if self.manager.cancel(idx):
             if idx is None:
                 self.call_back(f'[cancel] all waiting tasks are cancelled', sync_cnt)
@@ -58,16 +71,17 @@ class Guard:
                 self.call_back(f'[cancel] id={idx}', sync_cnt)
         else:
             if idx is None:
-                self.call_back(f'[error] failed to cancel the tasks', sync_cnt)
+                self.call_back(f'[cancel] ERROR: failed to cancel the tasks', sync_cnt)
             else:
-                self.call_back(f'[error] failed to cancel the task ({idx})', sync_cnt)
+                self.call_back(f'[cancel] ERROR: failed to cancel the task ({idx})', sync_cnt)
 
-    def restart(self, idx: int, sync_cnt: int):
+    def restart(self, args: dict, sync_cnt: int):
+        idx = args['id']
         restart_idx = self.manager.restart(idx)
         if restart_idx != -1:
             self.call_back(f'[restart] id={idx}->{restart_idx}', sync_cnt)
         else:
-            self.call_back(f'[error] failed to restart the task ({idx})', sync_cnt)
+            self.call_back(f'[restart] ERROR: failed to restart the task ({idx})', sync_cnt)
         
     def format_time(self, t):
         if t is None:
@@ -75,21 +89,20 @@ class Guard:
         else:
             return time.strftime(self.format, t)
 
-    def ls(self, param: Sequence[str], sync_cnt: int):
-        args = ls_parser.parse_args(param)
-        if args.done or args.not_done:
-            tasks = self.manager.get_tasks(args.latest_n, args.done, args.not_done)
+    def ls(self, args: dict, sync_cnt: int):
+        if args['done'] or args['not_done']:
+            tasks = self.manager.get_tasks(args['latest_n'], args['done'], args['not_done'])
         else: # no signal
-            tasks = self.manager.get_tasks(args.latest_n)
-        if args.long:
+            tasks = self.manager.get_tasks(args['latest_n'])
+        if args['long']:
             header = ['id', 'state', 'submit', 'start', 'end', 'duration', 'command']
         else:
             header = ['id', 'state', 'submit', 'command']
-        if args.pid:
+        if args['pid']:
             header += ['pid']
         data = [header]
         for task in tasks:
-            if args.long:
+            if args['long']:
                 record = [
                     task.idx,
                     task.state.name,
@@ -106,71 +119,44 @@ class Guard:
                     self.format_time(task.submit_time),
                     f'{task.cmd[:47]}...'
                 ]
-            if args.pid:
+            if args['pid']:
                 record += [task.pid if task.pid else 'N/A']
             data.append(record)
         self.call_back(tabulate(data, headers='firstrow'), sync_cnt)
 
-    def clean(self, sync_cnt: int):
+    def clean(self, args: dict, sync_cnt: int):
         n = self.manager.clean()
         self.call_back(f'[clean] {n} tasks', sync_cnt)
 
-    def quit(self, param: Sequence[str], sync_cnt: int) -> bool:
-        args = quit_parser.parse_args(param)
-        if args.force:
-            self.cancel(None, -1)
+    def quit(self, args: dict, sync_cnt: int) -> bool:
+        if args['force']:
+            self.cancel({'id': None}, -1)
         elif not self.manager.all_done():
-            self.call_back('[quit] tasks are still running, use \'quit force\' to quit anyway', sync_cnt)
+            self.call_back('[quit] tasks are still running, use \'quit -f\' to quit anyway', sync_cnt)
             return False
         self.call_back('[quit] bye', sync_cnt)
         return True
-                
+    
     def run(self):
         while True:
-            s = os.read(self.rf, 1024)
-            if len(s) == 0:
+            cmds = sorted(os.listdir(CMD_FOLDER), key=lambda x: int(x.split('.')[0]))
+            if len(cmds) == 0:
                 time.sleep(1e-2)
                 continue
-            ret = s.decode()
-            ret = ret.split(' ', 2)
-            sync_cnt = int(ret[0])
-            op = ret[1]
-            if len(ret) == 3:
-                param = [x for x in ret[2].split(' ') if x] # not ''
-            else:
-                param = []
-            if op == 'ls':
-                self.ls(param, sync_cnt)
-            elif op == 'submit':
+            for cmd_name in cmds:
+                sync_cnt = int(cmd_name.split('.')[0])
+                cmd_file = os.path.join(CMD_FOLDER, cmd_name)
                 try:
-                    cwd, cmd = ret[2].split(' ', 1)
-                    self.submit(cmd, cwd, sync_cnt)
+                    with open(cmd_file, 'r') as f:
+                        args = json.load(f)
+                    os.remove(cmd_file)
                 except:
-                    self.call_back('[error] usage: submit command arg1 arg2 ...', sync_cnt)
-            elif op == 'cancel':
-                try:
-                    idx = int(ret[2])
-                except:
-                    idx = None
-                self.cancel(idx, sync_cnt)
-            elif op == 'restart':
-                try:
-                    idx = int(ret[2])
-                    self.restart(idx, sync_cnt)
-                except:
-                    self.call_back('[error] usage: restart id', sync_cnt)
-            elif op == 'clean':
-                self.clean(sync_cnt)
-            elif op == 'redirect':
-                try:
-                    self.redirect(ret[2], sync_cnt)
-                except:
-                    self.call_back('[error] usage: redirect path|terminal', sync_cnt)
-            elif op == 'quit':
-                if self.quit(param, sync_cnt):
-                    break
-        os.close(self.rf)
-        os.close(self.wf)
+                    print(f'[chopsticks] ERROR: failed to load {cmd_file}')
+                    continue
+                op = args['sub_command']
+                self.handlers[op](args, sync_cnt)
+                if op == 'quit':
+                    return
 
 if __name__ == '__main__':
     exec = Guard()
