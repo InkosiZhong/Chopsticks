@@ -34,7 +34,7 @@ sh setup.sh
 
 ### Usage
 
-Chopsticks supports 6 commands: redirect, submit, cancel, ls, clean, quit, you can use them starting with  `c` , the first letter of the Chopsticks
+Chopsticks supports 6 commands: redirect, submit, cancel, restart, ls, clean, quit, you can use them starting with  `c` , the first letter of the Chopsticks
 
 #### creidirect
 
@@ -69,6 +69,19 @@ csubmit python test.py 0 1
 > [submit] id=1
 ccancal 1
 > [cancel] id=1
+```
+
+#### crestart
+
+```bash
+crestart id # restart a specified task
+# Example
+csubmit python test.py 0 1
+> [submit] id=0
+ccancel 0
+> [cancel] id=0
+crestart 0
+> [restart] id=0->1
 ```
 
 #### cls
