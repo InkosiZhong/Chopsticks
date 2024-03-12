@@ -1,17 +1,11 @@
 # Chopsticks v2 🥢
 
-🎉 2.x version released, code refactored and new features added!
-> A **sequential** task manager for Linux and MacOS
+>🔥 2.x version released, code refactored and new features added!
 
 ### Who need this
 
 - If you use a single computing node, and often run complex computing jobs, limited by hardware bottlenecks (RAM size, GPU memory size, number of CPU cores, etc.)
 - When you are ready to leave, and the tasks you have submitted has not yet finished running, but you still wanna append some new tasks so that it has done more work when you come back.
-
-### Who don't need this
-
-- If you have a large-scale computing cluster that can sufficiently parallelize the submitted tasks, please use SLURM.
-- If your computing tasks do not take up very much hardware resources, please submit them manually in the terminal directly, don't worry about them being interrupted.
 
 ![chopsticks2.gif](https://s2.loli.net/2024/03/12/ZWvqyezit6phj4s.gif)
 
