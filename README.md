@@ -7,7 +7,7 @@
 - If you use a single computing node, and often run complex computing jobs, limited by hardware bottlenecks (RAM size, GPU memory size, number of CPU cores, etc.)
 - When you are ready to leave, and the tasks you have submitted has not yet finished running, but you still wanna append some new tasks so that it has done more work when you come back.
 
-![chopsticks2.gif](https://s2.loli.net/2024/03/12/ZWvqyezit6phj4s.gif)
+![chopsticks2.gif](https://s2.loli.net/2024/03/13/3FoPRuJ6ViLhjY2.gif)
 
 ## Get Started
 
