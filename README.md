@@ -178,11 +178,10 @@ Chopsticks exists to handle large-scale computing tasks, interactive tasks are n
 Chopsticks temporarily does not support different tasks to run in different environments, it mainly depends on the running environment of the guard process. If you want to modify the running environment (such as conda environment), please execute following commands
 
 ```bash
-(base) cquit
+(base) cs quit
 (base) conda activate env
-(env) credirect # or any other commands
+(env) cs redirect # or any other commands
 > [trigger] start a guard process
 > [guard] guard process ready
 > [redirect] set as /tmp/out.txt
-> [trigger] the above outputs are antique
 ```
